@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Activity Monitor</title>
+    <link rel="icon" type="image/png" href="icon.png">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container settings-container">
+        <div class="header">
+            <img src="icon.png" alt="Activity Monitor" class="app-icon">
+            <h1>Settings</h1>
+        </div>
+        
+        <form id="settings-form">
+            <div class="setting-group">
+                <label for="inactivity-timeout">Inactivity Timeout:</label>
+                <div class="time-input-group">
+                    <input type="number" id="timeout-hours" min="0" max="23" value="0" class="time-input">
+                    <span class="time-separator">:</span>
+                    <input type="number" id="timeout-minutes" min="0" max="59" value="0" class="time-input">
+                    <span class="time-separator">:</span>
+                    <input type="number" id="timeout-seconds" min="1" max="59" value="5" class="time-input">
+                    <div class="time-labels">
+                        <span>HH</span>
+                        <span>MM</span>
+                        <span>SS</span>
+                    </div>
+                </div>
+                <small>Time before showing the popup (minimum 1 second)</small>
+            </div>
+            
+            <div class="setting-group">
+                <label for="popup-message">Popup Message:</label>
+                <input type="text" id="popup-message" value="Move the mouse!" maxlength="50">
+                <small>Main message displayed in the popup</small>
+            </div>
+            
+            <div class="setting-group">
+                <label for="auto-close-timeout">Auto-close Timeout (seconds):</label>
+                <input type="number" id="auto-close-timeout" min="1" max="60" value="5">
+                <small>How long popup stays visible (1-60 seconds)</small>
+            </div>
+            
+            <div class="setting-group checkbox-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="enable-sound">
+                    <span class="checkmark"></span>
+                    Enable notification sound
+                </label>
+                <small>Play a sound when popup appears</small>
+            </div>
+            
+            <div class="setting-group">
+                <label for="theme">Theme:</label>
+                <select id="theme">
+                    <option value="default">Default (Orange/Red)</option>
+                    <option value="blue">Blue</option>
+                    <option value="green">Green</option>
+                    <option value="purple">Purple</option>
+                </select>
+                <small>Color theme for the popup</small>
+            </div>
+            
+            <div class="button-group">
+                <button type="button" id="save-btn" class="primary-btn">Save Settings</button>
+                <button type="button" id="reset-btn" class="secondary-btn">Reset to Defaults</button>
+                <button type="button" id="close-btn" class="close-btn">Close</button>
+            </div>
+        </form>
+        
+        <div id="status-message" class="status-message hidden"></div>
+    </div>
+    
+    <script src="settings-renderer.js"></script>
+</body>
+</html>

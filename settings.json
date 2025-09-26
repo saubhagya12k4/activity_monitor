@@ -1,0 +1,7 @@
+{
+  "inactivityTimeout": 60000,
+  "popupMessage": "Move the mouse!",
+  "autoCloseTimeout": 3000,
+  "enableSound": true,
+  "theme": "default"
+}

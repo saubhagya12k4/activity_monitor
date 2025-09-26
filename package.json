@@ -1,0 +1,50 @@
+{
+  "name": "activity-monitor",
+  "version": "1.0.0",
+  "description": "An Electron app that shows a popup when mouse/keyboard is inactive for 10 seconds",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "build": "electron-builder",
+    "dist": "electron-builder --publish=never"
+  },
+  "keywords": ["electron", "mouse", "activity", "monitor"],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^27.0.0",
+    "electron-builder": "^24.6.4"
+  },
+  "dependencies": {
+    "robotjs": "^0.6.0"
+  },
+  "build": {
+    "appId": "com.example.activitymonitor",
+    "productName": "Activity Monitor",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "renderer.js",
+      "settings-renderer.js",
+      "index.html",
+      "popup.html",
+      "settings.html",
+      "settings.json",
+      "styles.css",
+      "icon.png",
+      "wired-flat-1315-computer-mouse.gif"
+    ],
+    "mac": {
+      "icon": "icon.png"
+    },
+    "win": {
+      "icon": "icon.png"
+    },
+    "linux": {
+      "icon": "icon.png"
+    }
+  }
+}

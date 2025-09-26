@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Move the Mouse!</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        html, body {
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body class="popup-body">
+    <div class="popup-container">
+        <div class="popup-content" id="popup-content">
+            <img src="wired-flat-1315-computer-mouse.gif" alt="Mouse Animation" class="mouse-gif">
+            <h2 class="popup-message" id="popup-message">Move the mouse!</h2>
+            <p class="popup-subtitle" id="popup-subtitle">No activity detected for 5 seconds</p>
+        </div>
+    </div>
+    <script>
+        const { ipcRenderer } = require('electron');
+        
+        // Load dynamic content when popup opens
+        document.addEventListener('DOMContentLoaded', () => {
+            // Get current settings for popup content
+            const urlParams = new URLSearchParams(window.location.search);
+            const message = urlParams.get('message') || 'Move the mouse!';
+            const subtitle = urlParams.get('subtitle') || 'No activity detected';
+            const theme = urlParams.get('theme') || 'default';
+            
+            // Update content
+            document.getElementById('popup-message').textContent = message;
+            document.getElementById('popup-subtitle').textContent = subtitle;
+            
+            // Apply theme
+            const popupContent = document.getElementById('popup-content');
+            if (theme !== 'default') {
+                popupContent.classList.add(`theme-${theme}`);
+            }
+        });
+        
+        // Close popup on any key press
+        document.addEventListener('keydown', () => {
+            ipcRenderer.send('close-popup');
+        });
+        
+        // Close popup on mouse movement within the popup
+        document.addEventListener('mousemove', () => {
+            ipcRenderer.send('mouse-moved');
+        });
+        
+        // Close popup on click anywhere
+        document.addEventListener('click', () => {
+            ipcRenderer.send('close-popup');
+        });
+    </script>
+</body>
+</html>

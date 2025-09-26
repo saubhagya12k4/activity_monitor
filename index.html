@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activity Monitor</title>
+    <link rel="icon" type="image/png" href="icon.png">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+        <div class="container">
+        <div class="header">
+            <img src="icon.png" alt="Activity Monitor" class="app-icon">
+            <h1>Activity Monitor</h1>
+        </div>
+        
+        <div class="button-group">
+            <button id="start-btn" class="primary-btn">▶️ Start</button>
+            <button id="pause-btn" class="secondary-btn">⏸️ Pause</button>
+            <button id="settings-btn" class="settings-btn">⚙️ Settings</button>
+        </div>
+        
+        <p>The application is now monitoring your mouse and keyboard activity.</p>
+        <p>A popup with the mouse GIF will appear if there's no activity for <strong>5 seconds</strong> (testing mode).</p>
+        <p><strong>Press Ctrl+Shift+M to show/hide this window</strong></p>
+        <div class="status">
+            <span id="status-text">Monitoring active...</span>
+            <div class="monitoring-indicator">
+                <span id="monitoring-status" class="status-active">🟢 Active</span>
+            </div>
+        </div>
+        <div class="info">
+            <h3>How it works:</h3>
+            <ul>
+                <li>✅ Monitors mouse movement (when robotjs is available)</li>
+                <li>✅ Monitors keyboard activity in this app</li>
+                <li id="timeout-info">🎯 Shows popup after 5 seconds of inactivity (testing mode)</li>
+                <li id="autoclose-info">⏰ Popup auto-closes after 5 seconds</li>
+                <li>🖱️ Any activity resets the timer</li>
+                <li>⚙️ Press <strong>Ctrl+,</strong> to open settings</li>
+                <li>▶️ Press <strong>Ctrl+Shift+S</strong> to start monitoring</li>
+                <li>⏸️ Press <strong>Ctrl+Shift+P</strong> to pause monitoring</li>
+            </ul>
+            <p><small id="test-info">💡 To test: Don't move the mouse or press keys for 5 seconds</small></p>
+        </div>
+    </div>
+    <script src="renderer.js"></script>
+</body>
+</html>
