@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Move the Mouse!</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="dist/styles.css">
     <style>
         html, body {
             overflow: hidden;
@@ -12,19 +12,60 @@
             padding: 0;
             width: 100%;
             height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        /* Ensure content fits within window bounds */
+        #popup-content {
+            max-height: 90vh;
+            box-sizing: border-box;
+        }
+        
+        /* Responsive text sizing */
+        @media (max-height: 400px) {
+            #popup-content {
+                padding: 1rem;
+            }
+            
+            h2 {
+                font-size: 1.25rem !important;
+                margin-bottom: 0.5rem !important;
+            }
+            
+            p {
+                font-size: 0.875rem !important;
+                margin-bottom: 1rem !important;
+            }
         }
     </style>
 </head>
-<body class="popup-body">
-    <div class="popup-container">
-        <div class="popup-content" id="popup-content">
-            <img src="wired-flat-1315-computer-mouse.gif" alt="Mouse Animation" class="mouse-gif">
-            <h2 class="popup-message" id="popup-message">Move the mouse!</h2>
-            <p class="popup-subtitle" id="popup-subtitle">No activity detected for 5 seconds</p>
+<body class="flex items-center justify-center min-h-screen w-full p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-600 p-6 text-center w-full max-w-md mx-auto transform transition-all duration-300" id="popup-content">
+        <div class="mb-4">
+            <div class="w-20 h-20 mx-auto mb-3 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-800 dark:to-blue-900 flex items-center justify-center shadow-lg">
+                <img src="popup_icon.png" alt="Mouse Animation" 
+                     class="w-14 h-14 object-contain">
+            </div>
+        </div>
+        <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100 mb-2" id="popup-message">
+            Move the mouse!
+        </h2>
+        <p class="text-sm text-gray-600 dark:text-gray-300 mb-4" id="popup-subtitle">
+            No activity detected for 5 seconds
+        </p>
+        <div class="text-sm text-blue-700 dark:text-blue-300 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/40 dark:to-blue-800/40 rounded-lg p-3 border border-blue-200 dark:border-blue-700 shadow-inner hidden" 
+             id="popup-timer">
+            <div class="flex items-center justify-center space-x-2">
+                <div class="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                <span>Auto-closing in: <span id="countdown" class="font-mono font-bold text-blue-800 dark:text-blue-200">3</span>s</span>
+            </div>
         </div>
     </div>
     <script>
         const { ipcRenderer } = require('electron');
+        
+        let countdownInterval = null;
+        let soundDuration = 0;
         
         // Load dynamic content when popup opens
         document.addEventListener('DOMContentLoaded', () => {
@@ -32,31 +73,169 @@
             const urlParams = new URLSearchParams(window.location.search);
             const message = urlParams.get('message') || 'Move the mouse!';
             const subtitle = urlParams.get('subtitle') || 'No activity detected';
-            const theme = urlParams.get('theme') || 'default';
+            const enableSound = urlParams.get('enableSound') === 'true';
+            const autoCloseTimeout = parseInt(urlParams.get('autoCloseTimeout')) || 5000;
             
             // Update content
             document.getElementById('popup-message').textContent = message;
             document.getElementById('popup-subtitle').textContent = subtitle;
             
-            // Apply theme
-            const popupContent = document.getElementById('popup-content');
-            if (theme !== 'default') {
-                popupContent.classList.add(`theme-${theme}`);
+            // If sound is disabled, show countdown timer
+            if (!enableSound) {
+                showCountdownTimer(autoCloseTimeout);
             }
         });
         
+        // Listen for notification sound play request from main process
+        ipcRenderer.on('play-notification-sound', (event, soundConfig) => {
+            playNotificationSound(soundConfig);
+        });
+        
+        function playNotificationSound(config) {
+            if (config.soundType === 'system') {
+                playSystemNotificationSound();
+            } else if (config.soundType === 'custom' && config.customSoundPath) {
+                playCustomSound(config.customSoundPath);
+            } else {
+                playSystemNotificationSound();
+            }
+        }
+        
+        function playSystemNotificationSound() {
+            try {
+                // Use HTML5 Audio API to play system notification sound
+                // Create a simple notification beep
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const soundDurationMs = 1500; // 1.5 seconds for system beep
+                
+                // Create a pleasant two-tone notification
+                createNotificationTone(audioContext, 600, 0, 0.4);     // First tone
+                createNotificationTone(audioContext, 800, 0.5, 0.4);   // Second tone
+                
+                soundDuration = soundDurationMs;
+                showSoundBasedTimer(soundDurationMs);
+                
+                // Notify main process when sound completes
+                setTimeout(() => {
+                    ipcRenderer.send('sound-finished', soundDurationMs);
+                }, soundDurationMs);
+                
+            } catch (error) {
+                console.error('Error creating system notification sound:', error);
+                ipcRenderer.send('sound-error');
+            }
+        }
+        
+        function playCustomSound(soundPath) {
+            try {
+                const audio = new Audio();
+                audio.src = `file://${soundPath}`;
+                
+                audio.addEventListener('loadedmetadata', () => {
+                    soundDuration = Math.ceil(audio.duration * 1000);
+                    showSoundBasedTimer(soundDuration);
+                    
+                    audio.play().then(() => {
+                        audio.addEventListener('ended', () => {
+                            ipcRenderer.send('sound-finished', soundDuration);
+                        });
+                    }).catch((error) => {
+                        console.error('Error playing custom sound:', error);
+                        ipcRenderer.send('sound-error');
+                    });
+                });
+                
+                audio.addEventListener('error', (error) => {
+                    console.error('Custom audio loading error:', error);
+                    // Fallback to system sound
+                    playSystemNotificationSound();
+                });
+                
+            } catch (error) {
+                console.error('Error creating custom audio element:', error);
+                // Fallback to system sound
+                playSystemNotificationSound();
+            }
+        }
+        
+        function createNotificationTone(audioContext, frequency, startTime, duration) {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = frequency;
+            oscillator.type = 'sine';
+            
+            // Smooth envelope
+            const now = audioContext.currentTime + startTime;
+            gainNode.gain.setValueAtTime(0, now);
+            gainNode.gain.linearRampToValueAtTime(0.15, now + 0.05);
+            gainNode.gain.setValueAtTime(0.15, now + duration - 0.1);
+            gainNode.gain.linearRampToValueAtTime(0, now + duration);
+            
+            oscillator.start(now);
+            oscillator.stop(now + duration);
+        }
+        
+        function showCountdownTimer(totalTime) {
+            const timerElement = document.getElementById('popup-timer');
+            const countdownElement = document.getElementById('countdown');
+            timerElement.style.display = 'block';
+            
+            let remaining = Math.ceil(totalTime / 1000);
+            countdownElement.textContent = remaining;
+            
+            countdownInterval = setInterval(() => {
+                remaining--;
+                if (remaining <= 0) {
+                    clearInterval(countdownInterval);
+                    return;
+                }
+                countdownElement.textContent = remaining;
+            }, 1000);
+        }
+        
+        function showSoundBasedTimer(soundDurationMs) {
+            const timerElement = document.getElementById('popup-timer');
+            timerElement.style.display = 'block';
+            
+            // Show sound duration message with better styling
+            const soundSeconds = (soundDurationMs / 1000).toFixed(1);
+            timerElement.innerHTML = `
+                <div class="flex items-center justify-center space-x-2">
+                    <div class="w-2 h-2 bg-green-500 rounded-full animate-ping"></div>
+                    <span>🔊 Playing notification (${soundSeconds}s)...</span>
+                </div>
+            `;
+            
+            // After sound finishes, show closing message
+            setTimeout(() => {
+                timerElement.innerHTML = `
+                    <div class="flex items-center justify-center space-x-2">
+                        <div class="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
+                        <span>✅ Sound finished, closing...</span>
+                    </div>
+                `;
+            }, soundDurationMs - 500);
+        }
+        
         // Close popup on any key press
         document.addEventListener('keydown', () => {
+            if (countdownInterval) clearInterval(countdownInterval);
             ipcRenderer.send('close-popup');
         });
         
         // Close popup on mouse movement within the popup
         document.addEventListener('mousemove', () => {
+            if (countdownInterval) clearInterval(countdownInterval);
             ipcRenderer.send('mouse-moved');
         });
         
         // Close popup on click anywhere
         document.addEventListener('click', () => {
+            if (countdownInterval) clearInterval(countdownInterval);
             ipcRenderer.send('close-popup');
         });
     </script>

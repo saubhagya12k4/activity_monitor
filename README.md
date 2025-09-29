@@ -77,7 +77,7 @@ npm start
 
 ```
 timer_helper/
-├── 🎬 wired-flat-1315-computer-mouse.gif  # Your mouse animation
+├── 🎬 mouse.gif  # Your mouse animation
 ├── �️ icon.png                            # Application icon/logo
 ├── �📄 main.js                             # Main Electron process
 ├── 🌐 index.html                          # Main monitoring window
@@ -147,7 +147,7 @@ setTimeout(() => {
 ## 🎨 Customization
 
 ### Replace the Mouse GIF
-Simply replace `wired-flat-1315-computer-mouse.gif` with your preferred animation.
+Simply replace `mouse.gif` with your preferred animation.
 
 ### Modify Popup Appearance
 Edit `styles.css` - look for `.popup-content` and related classes.

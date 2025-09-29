@@ -1,7 +1,9 @@
 {
   "inactivityTimeout": 60000,
-  "popupMessage": "Move the mouse!",
-  "autoCloseTimeout": 3000,
+  "popupMessage": "Saubhagya you haven't move the mouse",
+  "autoCloseTimeout": 2000,
   "enableSound": true,
+  "soundType": "system",
+  "customSoundPath": "",
   "theme": "default"
 }

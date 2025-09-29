@@ -4,20 +4,32 @@
   "description": "An Electron app that shows a popup when mouse/keyboard is inactive for 10 seconds",
   "main": "main.js",
   "scripts": {
-    "start": "electron .",
-    "dev": "electron . --dev",
-    "build": "electron-builder",
-    "dist": "electron-builder --publish=never"
+    "start": "npm run build-css:prod && npx electron .",
+    "dev": "npm run build-css:dev && npx electron . --dev",
+    "build": "npm run build-css:prod && npx electron-builder",
+    "dist": "npm run build-css:prod && npx electron-builder --publish=never",
+    "rebuild": "npx electron-rebuild",
+    "postinstall": "npx electron-rebuild",
+    "build-css": "npm run build-css:prod",
+    "build-css:prod": "npx tailwindcss -i ./src/input.css -o ./dist/styles.css --minify",
+    "build-css:dev": "npx tailwindcss -i ./src/input.css -o ./dist/styles.css",
+    "watch-css": "npx tailwindcss -i ./src/input.css -o ./dist/styles.css --watch"
   },
-  "keywords": ["electron", "mouse", "activity", "monitor"],
+  "keywords": [
+    "electron",
+    "mouse",
+    "activity",
+    "monitor"
+  ],
   "author": "Your Name",
   "license": "MIT",
   "devDependencies": {
-    "electron": "^27.0.0",
-    "electron-builder": "^24.6.4"
-  },
-  "dependencies": {
-    "robotjs": "^0.6.0"
+    "electron": "*",
+    "electron-builder": "*",
+    "electron-rebuild": "*",
+    "tailwindcss": "^3.4.0",
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.32"
   },
   "build": {
     "appId": "com.example.activitymonitor",
@@ -33,9 +45,9 @@
       "popup.html",
       "settings.html",
       "settings.json",
-      "styles.css",
+      "dist/styles.css",
       "icon.png",
-      "wired-flat-1315-computer-mouse.gif"
+      "popup_icon.png"
     ],
     "mac": {
       "icon": "icon.png"
@@ -46,5 +58,9 @@
     "linux": {
       "icon": "icon.png"
     }
+  },
+  "dependencies": {
+    "robotjs": "*",
+    "node-key-sender": "*"
   }
 }

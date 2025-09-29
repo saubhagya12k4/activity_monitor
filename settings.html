@@ -5,73 +5,131 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Settings - Activity Monitor</title>
     <link rel="icon" type="image/png" href="icon.png">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="dist/styles.css">
 </head>
-<body>
-    <div class="container settings-container">
-        <div class="header">
-            <img src="icon.png" alt="Activity Monitor" class="app-icon">
-            <h1>Settings</h1>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-system min-h-screen p-6">
+    <div class="max-w-md mx-auto">
+        <!-- Header -->
+        <div class="flex items-center mb-6">
+            <img src="icon.png" alt="Activity Monitor" class="w-8 h-8 mr-3">
+            <h1 class="text-xl font-light">Settings</h1>
         </div>
         
-        <form id="settings-form">
-            <div class="setting-group">
-                <label for="inactivity-timeout">Inactivity Timeout:</label>
-                <div class="time-input-group">
-                    <input type="number" id="timeout-hours" min="0" max="23" value="0" class="time-input">
-                    <span class="time-separator">:</span>
-                    <input type="number" id="timeout-minutes" min="0" max="59" value="0" class="time-input">
-                    <span class="time-separator">:</span>
-                    <input type="number" id="timeout-seconds" min="1" max="59" value="5" class="time-input">
-                    <div class="time-labels">
-                        <span>HH</span>
-                        <span>MM</span>
-                        <span>SS</span>
-                    </div>
-                </div>
-                <small>Time before showing the popup (minimum 1 second)</small>
-            </div>
-            
-            <div class="setting-group">
-                <label for="popup-message">Popup Message:</label>
-                <input type="text" id="popup-message" value="Move the mouse!" maxlength="50">
-                <small>Main message displayed in the popup</small>
-            </div>
-            
-            <div class="setting-group">
-                <label for="auto-close-timeout">Auto-close Timeout (seconds):</label>
-                <input type="number" id="auto-close-timeout" min="1" max="60" value="5">
-                <small>How long popup stays visible (1-60 seconds)</small>
-            </div>
-            
-            <div class="setting-group checkbox-group">
-                <label class="checkbox-label">
-                    <input type="checkbox" id="enable-sound">
-                    <span class="checkmark"></span>
-                    Enable notification sound
+        <form id="settings-form" class="space-y-6">
+            <!-- Inactivity Timeout -->
+            <div class="space-y-2">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Inactivity Timeout:
                 </label>
-                <small>Play a sound when popup appears</small>
+                <div class="flex items-center space-x-2">
+                    <input type="number" id="timeout-hours" min="0" max="23" value="0" 
+                           class="w-16 text-center input-field text-sm">
+                    <span class="text-gray-500">:</span>
+                    <input type="number" id="timeout-minutes" min="0" max="59" value="0" 
+                           class="w-16 text-center input-field text-sm">
+                    <span class="text-gray-500">:</span>
+                    <input type="number" id="timeout-seconds" min="1" max="59" value="5" 
+                           class="w-16 text-center input-field text-sm">
+                </div>
+                <div class="flex space-x-8 text-xs text-gray-500 ml-2">
+                    <span>HH</span>
+                    <span>MM</span>
+                    <span>SS</span>
+                </div>
+                <p class="text-xs text-gray-600 dark:text-gray-400">
+                    Time before showing the popup (minimum 1 second)
+                </p>
             </div>
             
-            <div class="setting-group">
-                <label for="theme">Theme:</label>
-                <select id="theme">
-                    <option value="default">Default (Orange/Red)</option>
-                    <option value="blue">Blue</option>
-                    <option value="green">Green</option>
-                    <option value="purple">Purple</option>
+            <!-- Popup Message -->
+            <div class="space-y-2">
+                <label for="popup-message" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Popup Message:
+                </label>
+                <input type="text" id="popup-message" value="Move the mouse!" maxlength="50" 
+                       class="input-field">
+                <p class="text-xs text-gray-600 dark:text-gray-400">
+                    Main message displayed in the popup
+                </p>
+            </div>
+            
+            <!-- Auto-close Timeout -->
+            <div id="auto-close-group" class="space-y-2">
+                <label for="auto-close-timeout" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Auto-close Timeout (seconds):
+                </label>
+                <input type="number" id="auto-close-timeout" min="1" max="60" value="5" 
+                       class="input-field">
+                <p id="auto-close-help" class="text-xs text-gray-600 dark:text-gray-400">
+                    How long popup stays visible (1-60 seconds)
+                </p>
+            </div>
+            
+            <!-- Enable Sound -->
+            <div class="space-y-2">
+                <label class="flex items-center space-x-3 cursor-pointer">
+                    <input type="checkbox" id="enable-sound" 
+                           class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Enable notification sound
+                    </span>
+                </label>
+                <p class="text-xs text-gray-600 dark:text-gray-400 ml-7">
+                    Play a sound when popup appears
+                </p>
+            </div>
+            
+            <!-- Sound Options -->
+            <div id="sound-options" class="space-y-2 hidden">
+                <label for="sound-type" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Sound Type:
+                </label>
+                <select id="sound-type" class="input-field">
+                    <option value="system">System Notification Sound</option>
+                    <option value="custom">Custom Audio File</option>
                 </select>
-                <small>Color theme for the popup</small>
+                <p class="text-xs text-gray-600 dark:text-gray-400">
+                    Choose between system notification sound or custom audio file
+                </p>
             </div>
             
-            <div class="button-group">
-                <button type="button" id="save-btn" class="primary-btn">Save Settings</button>
-                <button type="button" id="reset-btn" class="secondary-btn">Reset to Defaults</button>
-                <button type="button" id="close-btn" class="close-btn">Close</button>
+            <!-- Custom Sound File -->
+            <div id="custom-sound-group" class="space-y-2 hidden">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Custom Sound File:
+                </label>
+                <div class="flex space-x-2">
+                    <input type="text" id="custom-sound-path" placeholder="No file selected" readonly 
+                           class="input-field flex-1">
+                    <button type="button" id="select-sound-btn" class="btn-secondary px-3 text-sm">
+                        Browse...
+                    </button>
+                    <button type="button" id="test-sound-btn" class="btn-secondary px-3 text-sm hidden">
+                        Test
+                    </button>
+                </div>
+                <p class="text-xs text-gray-600 dark:text-gray-400">
+                    Supported formats: WAV, MP3, OGG, AAC, M4A, FLAC
+                </p>
+            </div>
+            
+
+            
+            <!-- Action Buttons -->
+            <div class="flex space-x-3 pt-4">
+                <button type="button" id="save-btn" class="btn-success flex-1">
+                    Save Settings
+                </button>
+                <button type="button" id="reset-btn" class="btn-secondary">
+                    Reset
+                </button>
+                <button type="button" id="close-btn" class="btn-secondary">
+                    Close
+                </button>
             </div>
         </form>
         
-        <div id="status-message" class="status-message hidden"></div>
+        <div id="status-message" class="mt-4 p-3 rounded-lg hidden"></div>
     </div>
     
     <script src="settings-renderer.js"></script>

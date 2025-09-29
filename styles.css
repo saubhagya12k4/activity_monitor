@@ -104,15 +104,21 @@ h1 {
     padding: 24px;
 }
 
+#settings-form {
+    padding: 16px;
+    margin: 0;
+}
+
 .setting-group {
     margin-bottom: 20px;
+    padding: 0 4px;
 }
 
 .setting-group label {
     display: block;
     margin-bottom: 6px;
     font-weight: 500;
-    font-size: 0.9em;
+    font-size: 0.85em;
     color: var(--text-primary);
 }
 
@@ -120,12 +126,12 @@ h1 {
 .setting-group input[type="number"],
 .setting-group select {
     width: 100%;
-    padding: 8px 12px;
+    padding: 6px 10px;
     border: 1px solid var(--border-color);
-    border-radius: 6px;
+    border-radius: 4px;
     background: var(--bg-primary);
     color: var(--text-primary);
-    font-size: 0.9em;
+    font-size: 0.85em;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -137,6 +143,24 @@ h1 {
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-primary) 20%, transparent);
 }
 
+/* Disabled input styling */
+.setting-group input[type="text"]:disabled,
+.setting-group input[type="number"]:disabled,
+.setting-group select:disabled {
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border-color: var(--border-color);
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.setting-group input[type="text"]:disabled:hover,
+.setting-group input[type="number"]:disabled:hover,
+.setting-group select:disabled:hover {
+    border-color: var(--border-color);
+    box-shadow: none;
+}
+
 .time-input-group {
     display: flex;
     align-items: center;
@@ -145,10 +169,10 @@ h1 {
 }
 
 .time-input {
-    width: 50px !important;
+    width: 45px !important;
     text-align: center;
-    padding: 6px 4px !important;
-    font-size: 0.9em !important;
+    padding: 5px 3px !important;
+    font-size: 0.8em !important;
 }
 
 .time-separator {
@@ -163,6 +187,14 @@ h1 {
     margin-left: 4px;
     font-size: 0.75em;
     color: var(--text-secondary);
+}
+
+.setting-group small {
+    display: block;
+    margin-top: 4px;
+    font-size: 0.75em;
+    color: var(--text-secondary);
+    padding-left: 2px;
 }
 
 .setting-group small {
@@ -198,16 +230,18 @@ h1 {
     gap: 8px;
     margin-top: 20px;
     flex-wrap: wrap;
+    margin-top: 24px;
+    padding: 0 4px;
 }
 
 .primary-btn,
 .secondary-btn,
 .settings-btn,
 .close-btn {
-    padding: 8px 16px;
+    padding: 6px 14px;
     border: 1px solid var(--border-color);
-    border-radius: 6px;
-    font-size: 0.9em;
+    border-radius: 4px;
+    font-size: 0.85em;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -371,7 +405,7 @@ h1 {
 }
 
 h1 {
-    margin-top: 0;
+    margin: 0 0 20px 0;
     font-size: 2em;
     font-weight: 300;
 }
@@ -466,5 +500,14 @@ p {
     font-size: 0.95em;
     color: var(--text-secondary);
     margin-bottom: 8px;
+}
+
+.popup-timer {
+    font-size: 0.85em;
+    color: var(--accent-primary);
+    margin-top: 12px;
+    margin-bottom: 4px;
+    font-weight: 500;
+    text-align: center;
 }
 

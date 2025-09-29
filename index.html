@@ -5,43 +5,96 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Activity Monitor</title>
     <link rel="icon" type="image/png" href="icon.png">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="dist/styles.css">
 </head>
-<body>
-        <div class="container">
-        <div class="header">
-            <img src="icon.png" alt="Activity Monitor" class="app-icon">
-            <h1>Activity Monitor</h1>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-system min-h-screen flex items-center justify-center p-4">
+    <div class="card max-w-lg w-full">
+        <!-- Header -->
+        <div class="flex items-center justify-center mb-6">
+            <img src="icon.png" alt="Activity Monitor" class="w-12 h-12 mr-4">
+            <h1 class="text-2xl font-light text-center">Activity Monitor</h1>
         </div>
         
-        <div class="button-group">
-            <button id="start-btn" class="primary-btn">▶️ Start</button>
-            <button id="pause-btn" class="secondary-btn">⏸️ Pause</button>
-            <button id="settings-btn" class="settings-btn">⚙️ Settings</button>
+        <!-- Control Buttons -->
+        <div class="flex gap-3 mb-6">
+            <button id="start-btn" class="btn-success flex-1 flex items-center justify-center">
+                <span class="mr-2">▶️</span> Start
+            </button>
+            <button id="pause-btn" class="btn-secondary flex-1 flex items-center justify-center">
+                <span class="mr-2">⏸️</span> Pause
+            </button>
+            <button id="settings-btn" class="btn-primary flex items-center justify-center px-4">
+                <span class="mr-2">⚙️</span> Settings
+            </button>
         </div>
         
-        <p>The application is now monitoring your mouse and keyboard activity.</p>
-        <p>A popup with the mouse GIF will appear if there's no activity for <strong>5 seconds</strong> (testing mode).</p>
-        <p><strong>Press Ctrl+Shift+M to show/hide this window</strong></p>
-        <div class="status">
-            <span id="status-text">Monitoring active...</span>
-            <div class="monitoring-indicator">
-                <span id="monitoring-status" class="status-active">🟢 Active</span>
+        <!-- Description -->
+        <div class="space-y-3 mb-6">
+            <p class="text-sm text-gray-700 dark:text-gray-300">
+                The application is monitoring your mouse and keyboard activity.
+            </p>
+            <p class="text-sm text-gray-700 dark:text-gray-300">
+                A popup with the mouse GIF will appear if there's no activity for 
+                <span class="font-semibold text-accent-orange">5 seconds</span> (testing mode).
+            </p>
+            <p class="text-xs text-gray-600 dark:text-gray-400">
+                <span class="font-semibold">Press Ctrl+Shift+M</span> to show/hide this window
+            </p>
+        </div>
+        
+        <!-- Status -->
+        <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 mb-6">
+            <div class="flex items-center justify-between">
+                <span id="status-text" class="text-sm font-mono text-gray-600 dark:text-gray-400">
+                    Monitoring active...
+                </span>
+                <span id="monitoring-status" class="text-sm font-medium text-green-600 dark:text-green-400 flex items-center">
+                    <span class="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
+                    Active
+                </span>
             </div>
         </div>
-        <div class="info">
-            <h3>How it works:</h3>
-            <ul>
-                <li>✅ Monitors mouse movement (when robotjs is available)</li>
-                <li>✅ Monitors keyboard activity in this app</li>
-                <li id="timeout-info">🎯 Shows popup after 5 seconds of inactivity (testing mode)</li>
-                <li id="autoclose-info">⏰ Popup auto-closes after 5 seconds</li>
-                <li>🖱️ Any activity resets the timer</li>
-                <li>⚙️ Press <strong>Ctrl+,</strong> to open settings</li>
-                <li>▶️ Press <strong>Ctrl+Shift+S</strong> to start monitoring</li>
-                <li>⏸️ Press <strong>Ctrl+Shift+P</strong> to pause monitoring</li>
+        
+        <!-- Info Section -->
+        <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+            <h3 class="text-sm font-semibold mb-3 text-blue-800 dark:text-blue-200">How it works:</h3>
+            <ul class="space-y-2 text-xs text-blue-700 dark:text-blue-300">
+                <li class="flex items-start">
+                    <span class="mr-2 mt-0.5">✅</span>
+                    <span>Monitors mouse movement (when robotjs is available)</span>
+                </li>
+                <li class="flex items-start">
+                    <span class="mr-2 mt-0.5">✅</span>
+                    <span>Monitors keyboard activity in this app</span>
+                </li>
+                <li class="flex items-start" id="timeout-info">
+                    <span class="mr-2 mt-0.5">🎯</span>
+                    <span>Shows popup after 5 seconds of inactivity (testing mode)</span>
+                </li>
+                <li class="flex items-start" id="autoclose-info">
+                    <span class="mr-2 mt-0.5">⏰</span>
+                    <span>Popup auto-closes after 5 seconds</span>
+                </li>
+                <li class="flex items-start">
+                    <span class="mr-2 mt-0.5">🖱️</span>
+                    <span>Any activity resets the timer</span>
+                </li>
+                <li class="flex items-start">
+                    <span class="mr-2 mt-0.5">⚙️</span>
+                    <span>Press <strong>Ctrl+,</strong> to open settings</span>
+                </li>
+                <li class="flex items-start">
+                    <span class="mr-2 mt-0.5">▶️</span>
+                    <span>Press <strong>Ctrl+Shift+S</strong> to start monitoring</span>
+                </li>
+                <li class="flex items-start">
+                    <span class="mr-2 mt-0.5">⏸️</span>
+                    <span>Press <strong>Ctrl+Shift+P</strong> to pause monitoring</span>
+                </li>
             </ul>
-            <p><small id="test-info">💡 To test: Don't move the mouse or press keys for 5 seconds</small></p>
+            <p class="text-xs text-blue-600 dark:text-blue-400 mt-3 italic" id="test-info">
+                💡 To test: Don't move the mouse or press keys for 5 seconds
+            </p>
         </div>
     </div>
     <script src="renderer.js"></script>

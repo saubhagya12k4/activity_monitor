@@ -4,12 +4,16 @@ let currentSettings = {};
 
 document.addEventListener('DOMContentLoaded', () => {
     // Load current settings
-    loadSettings();
-    
-    // Set up event listeners
+    loadSettings();    // Set up event listeners
     document.getElementById('save-btn').addEventListener('click', saveSettings);
     document.getElementById('reset-btn').addEventListener('click', resetSettings);
     document.getElementById('close-btn').addEventListener('click', closeSettings);
+    
+    // Sound option event listeners
+    document.getElementById('enable-sound').addEventListener('change', toggleSoundOptions);
+    document.getElementById('sound-type').addEventListener('change', toggleCustomSoundOptions);
+    document.getElementById('select-sound-btn').addEventListener('click', selectSoundFile);
+    document.getElementById('test-sound-btn').addEventListener('click', testCustomSound);
     
     // Real-time validation
     document.getElementById('timeout-hours').addEventListener('input', validateTimeout);
@@ -33,7 +37,8 @@ function saveSettings() {
         popupMessage: document.getElementById('popup-message').value.trim(),
         autoCloseTimeout: parseInt(document.getElementById('auto-close-timeout').value) * 1000,
         enableSound: document.getElementById('enable-sound').checked,
-        theme: document.getElementById('theme').value
+        soundType: document.getElementById('sound-type').value,
+        customSoundPath: document.getElementById('custom-sound-path').value.trim()
     };
     
     // Validate settings
@@ -168,7 +173,12 @@ ipcRenderer.on('settings-loaded', (event, settings) => {
     document.getElementById('popup-message').value = settings.popupMessage;
     document.getElementById('auto-close-timeout').value = settings.autoCloseTimeout / 1000;
     document.getElementById('enable-sound').checked = settings.enableSound;
-    document.getElementById('theme').value = settings.theme;
+    document.getElementById('sound-type').value = settings.soundType || 'system';
+    document.getElementById('custom-sound-path').value = settings.customSoundPath || '';
+    
+    // Update UI visibility
+    toggleSoundOptions();
+    toggleCustomSoundOptions();
 });
 
 ipcRenderer.on('settings-saved', (event, success) => {
@@ -180,6 +190,91 @@ ipcRenderer.on('settings-saved', (event, success) => {
 });
 
 ipcRenderer.on('settings-reset', (event) => {
-    showStatus('Settings reset to defaults', 'info');
-    loadSettings(); // Reload the form
+    // Reload settings after reset
+    loadSettings();
+    showStatus('Settings reset to defaults', 'success');
 });
+
+// Sound option functions
+function toggleSoundOptions() {
+    const enableSound = document.getElementById('enable-sound').checked;
+    const soundOptions = document.getElementById('sound-options');
+    const autoCloseGroup = document.getElementById('auto-close-group');
+    const autoCloseInput = document.getElementById('auto-close-timeout');
+    const autoCloseLabel = autoCloseGroup.querySelector('label');
+    const autoCloseHelp = document.getElementById('auto-close-help');
+    
+    if (enableSound) {
+        soundOptions.classList.remove('hidden');
+        toggleCustomSoundOptions();
+        
+        // Disable auto-close timeout setting when sound is enabled
+        autoCloseInput.disabled = true;
+        autoCloseInput.classList.add('opacity-50', 'cursor-not-allowed');
+        autoCloseLabel.classList.add('opacity-50');
+        autoCloseHelp.textContent = 'Auto-close timing is controlled by notification sound duration';
+        autoCloseHelp.classList.add('opacity-70', 'italic');
+    } else {
+        soundOptions.classList.add('hidden');
+        document.getElementById('custom-sound-group').classList.add('hidden');
+        
+        // Re-enable auto-close timeout setting when sound is disabled
+        autoCloseInput.disabled = false;
+        autoCloseInput.classList.remove('opacity-50', 'cursor-not-allowed');
+        autoCloseLabel.classList.remove('opacity-50');
+        autoCloseHelp.textContent = 'How long popup stays visible (1-60 seconds)';
+        autoCloseHelp.classList.remove('opacity-70', 'italic');
+    }
+}
+
+function toggleCustomSoundOptions() {
+    const soundType = document.getElementById('sound-type').value;
+    const customSoundGroup = document.getElementById('custom-sound-group');
+    const testButton = document.getElementById('test-sound-btn');
+    
+    if (soundType === 'custom') {
+        customSoundGroup.classList.remove('hidden');
+        // Show test button if a file is selected
+        const customPath = document.getElementById('custom-sound-path').value;
+        if (customPath) {
+            testButton.classList.remove('hidden');
+        } else {
+            testButton.classList.add('hidden');
+        }
+    } else {
+        customSoundGroup.classList.add('hidden');
+    }
+}
+
+async function selectSoundFile() {
+    try {
+        const filePath = await ipcRenderer.invoke('select-sound-file');
+        if (filePath) {
+            document.getElementById('custom-sound-path').value = filePath;
+            document.getElementById('test-sound-btn').classList.remove('hidden');
+            showStatus('Sound file selected', 'success');
+        }
+    } catch (error) {
+        console.error('Error selecting sound file:', error);
+        showStatus('Error selecting sound file', 'error');
+    }
+}
+
+function testCustomSound() {
+    const soundPath = document.getElementById('custom-sound-path').value;
+    if (soundPath) {
+        // Create audio element to test the sound
+        try {
+            const audio = new Audio(`file://${soundPath}`);
+            audio.play().then(() => {
+                showStatus('Playing test sound...', 'success');
+            }).catch((error) => {
+                console.error('Error playing test sound:', error);
+                showStatus('Error playing sound file', 'error');
+            });
+        } catch (error) {
+            console.error('Error creating audio for test:', error);
+            showStatus('Invalid audio file format', 'error');
+        }
+    }
+}
