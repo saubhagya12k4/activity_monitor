@@ -6,8 +6,7 @@ An Electron application that monitors mouse and keyboard activity and shows cust
 
 ### Linux Downloads
 
-[![Download DEB](https://img.shields.io/badge/Download-DEB%20Package-blue?style=for-the-badge&logo=debian)](https://github.com/saubhagya12k4/activity_monitor/releases/latest/download/activity-monitor_1.0.0_amd64.deb)
-[![Download AppImage](https://img.shields.io/badge/Download-AppImage-green?style=for-the-badge&logo=linux)](https://github.com/saubhagya12k4/activity_monitor/releases/latest/download/Activity-Monitor-1.0.0.AppImage)
+[![Download DEB](https://img.shields.io/badge/Download-DEB%20Package-blue?style=for-the-badge&logo=debian)](https://github.com/saubhagya12k4/activity_monitor/blob/main/releases/activity-monitor_1.0.0_amd64.deb)
 
 ### Installation Methods
 
