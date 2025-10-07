@@ -51,10 +51,37 @@ function loadSettings() {
 function saveSettings() {
   const settingsPath = path.join(__dirname, 'settings.json');
   try {
-    fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
+    // Create settings directory if it doesn't exist (for Linux packaged apps)
+    const settingsDir = path.dirname(settingsPath);
+    if (!fs.existsSync(settingsDir)) {
+      fs.mkdirSync(settingsDir, { recursive: true });
+    }
+    
+    // Write settings with proper permissions
+    fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2), {
+      mode: 0o666 // Read/write for user, group and others
+    });
     return true;
   } catch (error) {
-    console.log('Error saving settings:', error);
+    console.error('❌ Error saving settings:', error);
+    // Try alternative location for Linux packaged apps
+    if (process.platform === 'linux' && process.env.HOME) {
+      try {
+        const homeSettingsPath = path.join(process.env.HOME, '.config', 'activity-monitor', 'settings.json');
+        const homeSettingsDir = path.dirname(homeSettingsPath);
+        
+        if (!fs.existsSync(homeSettingsDir)) {
+          fs.mkdirSync(homeSettingsDir, { recursive: true });
+        }
+        
+        fs.writeFileSync(homeSettingsPath, JSON.stringify(settings, null, 2), {
+          mode: 0o666
+        });
+        return true;
+      } catch (homeError) {
+        console.error('❌ Error saving settings to home directory:', homeError);
+      }
+    }
     return false;
   }
 }
@@ -63,19 +90,14 @@ function saveSettings() {
 try {
   robot = require('robotjs');
   robotjsAvailable = true;
-  console.log('🖱️  robotjs loaded successfully - full activity monitoring enabled');
   
   // Test if robotjs actually works
   try {
     robot.getMousePos();
-    console.log('✅  robotjs functionality verified');
   } catch (testError) {
-    console.log('⚠️  robotjs loaded but not functional:', testError.message);
     robotjsAvailable = false;
   }
 } catch (error) {
-  console.log('⚠️  robotjs not available, using fallback method (timer-based only)');
-  console.log('   Install dependencies: sudo apt-get install libxtst6 libpng++-dev');
   robotjsAvailable = false;
 }
 
@@ -117,7 +139,6 @@ function showPopup() {
     return; // Popup already shown
   }
   
-  console.log(`🚨 Showing inactivity popup - no activity detected for ${settings.inactivityTimeout/1000} seconds`);
   popupShown = true;
   
   const { width, height } = screen.getPrimaryDisplay().workAreaSize;
@@ -210,7 +231,6 @@ function showPopup() {
 
 function hidePopup() {
   if (popupWindow && !popupWindow.isDestroyed()) {
-    console.log('✅ Hiding popup - activity detected');
     popupWindow.close();
   }
   popupShown = false;
@@ -234,7 +254,6 @@ function startActivityMonitoring() {
     activityCheckInterval = setInterval(checkActivity, 1000);
   }
   
-  console.log('🎯 Activity monitoring started');
   updateMonitoringStatus();
 }
 
@@ -244,20 +263,17 @@ function stopActivityMonitoring() {
     activityCheckInterval = null;
   }
   isMonitoring = false;
-  console.log('⏸️ Activity monitoring stopped');
   updateMonitoringStatus();
 }
 
 function pauseActivityMonitoring() {
   isMonitoring = false;
-  console.log('⏸️ Activity monitoring paused');
   updateMonitoringStatus();
 }
 
 function resumeActivityMonitoring() {
   isMonitoring = true;
   lastActivity = Date.now(); // Reset timer when resuming
-  console.log('▶️ Activity monitoring resumed');
   updateMonitoringStatus();
 }
 
@@ -699,27 +715,53 @@ ipcMain.on('pause-monitoring', () => {
   pauseActivityMonitoring();
 });
 
+// Store dialog state
+let isDialogOpen = false;
+
 // Handle custom sound file selection
-ipcMain.handle('select-sound-file', async () => {
-  const result = await dialog.showOpenDialog({
-    title: 'Select Custom Notification Sound',
-    filters: [
-      {
-        name: 'Audio Files',
-        extensions: ['wav', 'mp3', 'ogg', 'aac', 'm4a', 'flac']
-      },
-      {
-        name: 'All Files',
-        extensions: ['*']
-      }
-    ],
-    properties: ['openFile']
-  });
-  
-  if (!result.canceled && result.filePaths.length > 0) {
-    return result.filePaths[0];
+ipcMain.handle('select-sound-file', async (event) => {
+  try {
+    // Prevent multiple dialogs from opening
+    if (isDialogOpen) {
+      console.log('Dialog is already open');
+      return null;
+    }
+
+    if (!settingsWindow || settingsWindow.isDestroyed()) {
+      throw new Error('Settings window not available');
+    }
+
+    isDialogOpen = true;
+
+    const result = await dialog.showOpenDialog(settingsWindow, {
+      title: 'Select Custom Notification Sound',
+      filters: [
+        {
+          name: 'Audio Files',
+          extensions: ['wav', 'mp3', 'ogg', 'aac', 'm4a', 'flac']
+        },
+        {
+          name: 'All Files',
+          extensions: ['*']
+        }
+      ],
+      properties: ['openFile'],
+      defaultPath: process.env.HOME || process.env.USERPROFILE
+    }).finally(() => {
+      // Reset dialog state when done
+      isDialogOpen = false;
+    });
+    
+    // Handle the result
+    if (!result.canceled && result.filePaths.length > 0) {
+      return result.filePaths[0];
+    }
+    return null;
+  } catch (error) {
+    console.error('Error selecting sound file:', error);
+    isDialogOpen = false; // Reset state in case of error
+    return null;
   }
-  return null;
 });
 
 // Handle sound duration calculation for custom sounds

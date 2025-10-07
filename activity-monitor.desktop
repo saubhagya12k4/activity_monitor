@@ -2,9 +2,13 @@
 Version=1.0
 Type=Application
 Name=Activity Monitor
+GenericName=Activity Monitor
 Comment=Monitor mouse and keyboard activity with helpful reminders
-Exec=/home/saubhagya.v@simform.dom/Desktop/timer_helper/start.sh
-Icon=/home/saubhagya.v@simform.dom/Desktop/timer_helper/icon.png
+Exec=activity-monitor
+Icon=activity-monitor
 Terminal=false
 StartupNotify=true
 Categories=Utility;System;Monitor;
+Keywords=activity;monitor;mouse;keyboard;reminder;productivity;
+MimeType=
+StartupWMClass=Activity Monitor

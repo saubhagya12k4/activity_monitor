@@ -7,6 +7,15 @@
     "start": "npm run build-css:prod && npx electron .",
     "dev": "npm run build-css:dev && npx electron . --dev",
     "build": "npm run build-css:prod && npx electron-builder",
+    "build:all": "npm run build-css:prod && npx electron-builder --linux --win --mac",
+    "build:linux": "npm run build-css:prod && npx electron-builder --linux",
+    "build:linux-deb": "npm run build-css:prod && npx electron-builder --linux deb",
+    "build:linux-appimage": "npm run build-css:prod && npx electron-builder --linux AppImage",
+    "build:windows": "npm run build-css:prod && npx electron-builder --win",
+    "build:windows-exe": "npm run build-css:prod && npx electron-builder --win nsis",
+    "build:windows-portable": "npm run build-css:prod && npx electron-builder --win portable",
+    "build:mac": "npm run build-css:prod && npx electron-builder --mac",
+    "build:mac-dmg": "npm run build-css:prod && npx electron-builder --mac dmg",
     "dist": "npm run build-css:prod && npx electron-builder --publish=never",
     "rebuild": "npx electron-rebuild",
     "postinstall": "npx electron-rebuild",
@@ -24,12 +33,12 @@
   "author": "Your Name",
   "license": "MIT",
   "devDependencies": {
-    "electron": "*",
-    "electron-builder": "*",
-    "electron-rebuild": "*",
-    "tailwindcss": "^3.4.0",
     "autoprefixer": "^10.4.16",
-    "postcss": "^8.4.32"
+    "electron": "*",
+    "electron-builder": "^26.0.12",
+    "electron-rebuild": "*",
+    "postcss": "^8.4.32",
+    "tailwindcss": "^3.4.0"
   },
   "build": {
     "appId": "com.example.activitymonitor",
@@ -44,23 +53,99 @@
       "index.html",
       "popup.html",
       "settings.html",
-      "settings.json",
       "dist/styles.css",
       "icon.png",
-      "popup_icon.png"
+      "popup_icon.png",
+      "!settings.json",
+      "!**/*.md",
+      "!**/*.map",
+      "!src/**",
+      "!test/**",
+      "!releases/**",
+      "!node_modules/*/{test,tests,example,examples,docs}/**",
+      "!**/.git*",
+      "!**/.*"
     ],
+    "asar": true,
     "mac": {
-      "icon": "icon.png"
+      "icon": "icon.png",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "category": "public.app-category.utilities",
+      "hardenedRuntime": false,
+      "gatekeeperAssess": false,
+      "entitlements": null,
+      "entitlementsInherit": null
     },
     "win": {
-      "icon": "icon.png"
+      "icon": "icon.png",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64",
+            "ia32"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64",
+            "ia32"
+          ]
+        }
+      ],
+      "requestedExecutionLevel": "asInvoker"
     },
     "linux": {
-      "icon": "icon.png"
+      "icon": "icon.png",
+      "executableName": "activity-monitor",
+      "target": [
+        {
+          "target": "deb",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        },
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        },
+        {
+          "target": "rpm",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "category": "Utility",
+      "maintainer": "saubhagya12k4 <your.email@example.com>",
+      "vendor": "Activity Monitor Team",
+      "synopsis": "Mouse and keyboard activity monitor with popup notifications",
+      "description": "An Electron application that monitors mouse and keyboard activity and shows customizable popup notifications when no activity is detected for a specified duration."
     }
   },
   "dependencies": {
-    "robotjs": "*",
-    "node-key-sender": "*"
+    "node-key-sender": "*",
+    "robotjs": "*"
   }
 }

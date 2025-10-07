@@ -5,9 +5,11 @@ yarn-debug.log*
 yarn-error.log*
 
 # Build outputs
-dist/
 build/
 out/
+dist/linux-unpacked/
+dist/builder-debug.yml
+dist/builder-effective-config.yaml
 
 # Environment files
 .env

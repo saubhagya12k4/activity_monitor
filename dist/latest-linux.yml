@@ -1,0 +1,8 @@
+version: 1.0.0
+files:
+  - url: activity-monitor_1.0.0_amd64.deb
+    sha512: eIV6P1HCeVCgz0q3pJLJkFK1l2zMfUnX/3jP5ad10WgJhDDq55EYo1SjDhF9LNIQ/5ICbjvUbNZRDBuGZC+49g==
+    size: 81107942
+path: activity-monitor_1.0.0_amd64.deb
+sha512: eIV6P1HCeVCgz0q3pJLJkFK1l2zMfUnX/3jP5ad10WgJhDDq55EYo1SjDhF9LNIQ/5ICbjvUbNZRDBuGZC+49g==
+releaseDate: '2025-10-07T09:18:02.897Z'

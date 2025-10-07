@@ -1,9 +1,9 @@
 {
-  "inactivityTimeout": 60000,
+  "inactivityTimeout": 480000,
   "popupMessage": "Saubhagya you haven't move the mouse",
   "autoCloseTimeout": 2000,
   "enableSound": true,
-  "soundType": "system",
-  "customSoundPath": "",
+  "soundType": "custom",
+  "customSoundPath": "/home/saubhagya.v@simform.dom/Downloads/notification-alert-2-331726.mp3",
   "theme": "default"
 }

@@ -146,13 +146,62 @@ function validateAllSettings(settings) {
 }
 
 function showStatus(message, type = 'info') {
-    const statusEl = document.getElementById('status-message');
-    statusEl.textContent = message;
-    statusEl.className = `status-message ${type}`;
-    statusEl.classList.remove('hidden');
+    // Remove any existing status message
+    const existingStatus = document.getElementById('status-message');
+    if (existingStatus) {
+        existingStatus.remove();
+    }
+
+    // Create new status element with Tailwind classes
+    const statusEl = document.createElement('div');
+    statusEl.id = 'status-message';
     
+    // Base classes for the alert
+    statusEl.className = 'fixed bottom-4 left-1/2 transform -translate-x-1/2 mb-4 relative flex w-full max-w-md items-center p-3 text-sm text-white bg-green-600 rounded';
+    statusEl.setAttribute('role', 'alert');
+
+    // Create message content
+    const messageContent = document.createElement('div');
+    messageContent.className = 'flex-1 pr-8';
+    messageContent.textContent = message;
+    statusEl.appendChild(messageContent);
+
+    // Create close button
+    const closeButton = document.createElement('button');
+    closeButton.className = 'absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center justify-center w-8 h-8 rounded hover:bg-white/10 active:bg-white/20 transition-colors';
+    closeButton.type = 'button';
+    closeButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-5 w-5" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>`;
+    
+    // Add click handler to close button
+    closeButton.addEventListener('click', () => {
+        statusEl.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => statusEl.remove(), 300);
+    });
+    statusEl.appendChild(closeButton);
+
+    // Add to document and animate in
+    statusEl.style.opacity = '0';
+    statusEl.style.transform = 'translate(-50%, 1rem)';
+    document.body.appendChild(statusEl);
+
+    // Add entrance animation
+    requestAnimationFrame(() => {
+        statusEl.style.transition = 'all 0.3s ease-out';
+        statusEl.style.opacity = '1';
+        statusEl.style.transform = 'translate(-50%, 0)';
+    });
+
+    // Auto-hide after delay if not closed manually
     setTimeout(() => {
-        statusEl.classList.add('hidden');
+        if (document.body.contains(statusEl)) {
+            statusEl.style.opacity = '0';
+            statusEl.style.transform = 'translate(-50%, 1rem)';
+            setTimeout(() => {
+                if (document.body.contains(statusEl)) {
+                    statusEl.remove();
+                }
+            }, 300);
+        }
     }, 3000);
 }
 
@@ -246,8 +295,22 @@ function toggleCustomSoundOptions() {
     }
 }
 
+// Track button state
+let isSelectingSoundFile = false;
+
 async function selectSoundFile() {
+    // Prevent multiple clicks
+    if (isSelectingSoundFile) {
+        console.log('File selection already in progress');
+        return;
+    }
+
     try {
+        // Disable the button
+        const selectButton = document.getElementById('select-sound-btn');
+        selectButton.disabled = true;
+        isSelectingSoundFile = true;
+
         const filePath = await ipcRenderer.invoke('select-sound-file');
         if (filePath) {
             document.getElementById('custom-sound-path').value = filePath;
@@ -257,6 +320,13 @@ async function selectSoundFile() {
     } catch (error) {
         console.error('Error selecting sound file:', error);
         showStatus('Error selecting sound file', 'error');
+    } finally {
+        // Re-enable the button after a short delay
+        setTimeout(() => {
+            const selectButton = document.getElementById('select-sound-btn');
+            selectButton.disabled = false;
+            isSelectingSoundFile = false;
+        }, 500); // Add a small delay before allowing another selection
     }
 }
 
