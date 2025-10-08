@@ -170,16 +170,14 @@ chmod +x install-desktop.sh
 
 | Package Type | Architecture | Size | Description |
 |--------------|--------------|------|-------------|
-| **DEB** | x64 (amd64) | ~120MB | Ubuntu/Debian package with system integration |
-| **AppImage** | x64 | ~130MB | Universal Linux package (portable) |
-| **RPM** | x64 | ~120MB | RedHat/Fedora/SUSE package |
+| **DEB** | x64 (amd64) | ~78MB | Ubuntu/Debian package with system integration |
+| **AppImage** | x64 | ~113MB | Universal Linux package (portable) |
 
 ### Package Features
 
 - **DEB Package**: 
   - Automatic dependency installation
   - System menu integration
-  - Auto-updater support
   - Service integration
 
 - **AppImage**: 
@@ -195,7 +193,7 @@ chmod +x install-desktop.sh
 curl -s https://api.github.com/repos/saubhagya12k4/activity_monitor/releases/latest | grep tag_name
 
 # Download specific version
-wget https://github.com/saubhagya12k4/activity_monitor/releases/download/v1.0.0/activity-monitor_1.0.0_amd64.deb
+wget https://github.com/saubhagya12k4/activity_monitor/raw/refs/heads/main/releases/activity-monitor_1.0.0_amd64.deb?download=
 ```
 
 ## �📁 Project Structure
