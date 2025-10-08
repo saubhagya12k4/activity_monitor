@@ -6,16 +6,16 @@ An Electron application that monitors mouse and keyboard activity and shows cust
 
 ### Linux Downloads
 
-[![Download DEB](https://img.shields.io/badge/Download-DEB%20Package-blue?style=for-the-badge&logo=debian)](https://media.githubusercontent.com/media/saubhagya12k4/activity_monitor/refs/heads/main/releases/activity-monitor_1.0.0_amd64.deb?download=true)
+[![Download DEB](https://img.shields.io/badge/Download-DEB%20Package-blue?style=for-the-badge&logo=debian)](https://github.com/saubhagya12k4/activity_monitor/raw/refs/heads/main/releases/activity-monitor_1.0.0_amd64.deb?download=)
+[![Download AppImage](https://img.shields.io/badge/Download-AppImage-green?style=for-the-badge&logo=linux)](https://github.com/saubhagya12k4/activity_monitor/raw/refs/heads/main/releases/ActivityMonitor-1.0.0-linux-x64.AppImage?download=)
 
 ### Installation Methods
 
 #### Method 1: DEB Package (Ubuntu/Debian)
 ```bash
 # Download and install DEB package
-wget https://github.com/saubhagya12k4/activity_monitor/releases/latest/download/activity-monitor_1.0.0_amd64.deb
+wget https://github.com/saubhagya12k4/activity_monitor/raw/refs/heads/main/releases/activity-monitor_1.0.0_amd64.deb?download=
 sudo dpkg -i activity-monitor_1.0.0_amd64.deb
-
 # Fix dependencies if needed
 sudo apt-get install -f
 ```
@@ -23,11 +23,10 @@ sudo apt-get install -f
 #### Method 2: AppImage (Universal Linux)
 ```bash
 # Download AppImage
-wget https://github.com/saubhagya12k4/activity_monitor/releases/latest/download/Activity-Monitor-1.0.0.AppImage
-
+wget https://github.com/saubhagya12k4/activity_monitor/raw/refs/heads/main/releases/ActivityMonitor-1.0.0-linux-x64.AppImage?download=
 # Make executable and run
-chmod +x Activity-Monitor-1.0.0.AppImage
-./Activity-Monitor-1.0.0.AppImage
+chmod +x ActivityMonitor-1.0.0-linux-x64.AppImage
+./ActivityMonitor-1.0.0-linux-x64.AppImage
 ```
 
 #### Method 3: Build from Source
