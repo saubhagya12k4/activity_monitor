@@ -16,12 +16,40 @@ let settings = {};
 let isMonitoring = true;
 
 // Settings management
+function getSettingsPath() {
+  // Use proper user data directory instead of app directory
+  const userDataPath = app.getPath('userData');
+  return path.join(userDataPath, 'settings.json');
+}
+
+function getAudioAssetsPath() {
+  // Create a dedicated directory for audio assets
+  const userDataPath = app.getPath('userData');
+  const audioPath = path.join(userDataPath, 'audio');
+  
+  // Ensure directory exists
+  if (!fs.existsSync(audioPath)) {
+    fs.mkdirSync(audioPath, { recursive: true });
+  }
+  
+  return audioPath;
+}
+
 function loadSettings() {
-  const settingsPath = path.join(__dirname, 'settings.json');
+  const settingsPath = getSettingsPath();
+  
   try {
     if (fs.existsSync(settingsPath)) {
       const data = fs.readFileSync(settingsPath, 'utf8');
       settings = JSON.parse(data);
+      
+      // Validate custom sound path exists and is accessible
+      if (settings.customSoundPath && !fs.existsSync(settings.customSoundPath)) {
+        console.log('Custom sound file not found, resetting to system sound');
+        settings.soundType = 'system';
+        settings.customSoundPath = '';
+        saveSettings();
+      }
     } else {
       // Default settings
       settings = {
@@ -45,46 +73,76 @@ function loadSettings() {
       soundType: "system",
       customSoundPath: ""
     };
+    saveSettings();
   }
 }
 
 function saveSettings() {
-  const settingsPath = path.join(__dirname, 'settings.json');
+  const settingsPath = getSettingsPath();
   try {
-    // Create settings directory if it doesn't exist (for Linux packaged apps)
+    // Create settings directory if it doesn't exist
     const settingsDir = path.dirname(settingsPath);
     if (!fs.existsSync(settingsDir)) {
       fs.mkdirSync(settingsDir, { recursive: true });
     }
     
-    // Write settings with proper permissions
-    fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2), {
-      mode: 0o666 // Read/write for user, group and others
-    });
+    // Write settings to user data directory
+    fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2), 'utf8');
     return true;
   } catch (error) {
-    console.error('❌ Error saving settings:', error);
-    // Try alternative location for Linux packaged apps
-    if (process.platform === 'linux' && process.env.HOME) {
-      try {
-        const homeSettingsPath = path.join(process.env.HOME, '.config', 'activity-monitor', 'settings.json');
-        const homeSettingsDir = path.dirname(homeSettingsPath);
-        
-        if (!fs.existsSync(homeSettingsDir)) {
-          fs.mkdirSync(homeSettingsDir, { recursive: true });
-        }
-        
-        fs.writeFileSync(homeSettingsPath, JSON.stringify(settings, null, 2), {
-          mode: 0o666
-        });
-        return true;
-      } catch (homeError) {
-        console.error('❌ Error saving settings to home directory:', homeError);
-      }
-    }
+    console.error('Error saving settings:', error);
     return false;
   }
 }
+
+function copyCustomSoundFile(originalPath) {
+  try {
+    if (!fs.existsSync(originalPath)) {
+      throw new Error('Original sound file does not exist');
+    }
+    
+    const audioAssetsPath = getAudioAssetsPath();
+    const fileName = path.basename(originalPath);
+    const timestamp = Date.now();
+    const fileExt = path.extname(fileName);
+    const baseName = path.basename(fileName, fileExt);
+    
+    // Create unique filename to avoid conflicts
+    const newFileName = `${baseName}_${timestamp}${fileExt}`;
+    const newPath = path.join(audioAssetsPath, newFileName);
+    
+    // Copy the file
+    fs.copyFileSync(originalPath, newPath);
+    
+    // Clean up old audio files (keep only the latest 5)
+    const audioFiles = fs.readdirSync(audioAssetsPath)
+      .filter(file => file.startsWith(baseName + '_'))
+      .map(file => ({
+        name: file,
+        path: path.join(audioAssetsPath, file),
+        stat: fs.statSync(path.join(audioAssetsPath, file))
+      }))
+      .sort((a, b) => b.stat.mtime - a.stat.mtime);
+    
+    // Remove old files, keep only the latest 5
+    if (audioFiles.length > 5) {
+      audioFiles.slice(5).forEach(file => {
+        try {
+          fs.unlinkSync(file.path);
+        } catch (err) {
+          console.log('Warning: Could not delete old audio file:', err.message);
+        }
+      });
+    }
+    
+    return newPath;
+  } catch (error) {
+    console.error('Error copying custom sound file:', error);
+    return null;
+  }
+}
+        
+
 
 // Try to load robotjs with better error handling
 try {
@@ -192,12 +250,16 @@ function showPopup() {
     if (process.platform === 'linux') {
       // Simplified X11 handling - avoid problematic window management calls
       setTimeout(() => {
-        popupWindow.setAlwaysOnTop(true);
-        popupWindow.focus();
+        if (popupWindow && !popupWindow.isDestroyed()) {
+          popupWindow.setAlwaysOnTop(true);
+          popupWindow.focus();
+        }
       }, 200);
     } else {
-      popupWindow.setAlwaysOnTop(true, 'screen-saver');
-      popupWindow.focus();
+      if (popupWindow && !popupWindow.isDestroyed()) {
+        popupWindow.setAlwaysOnTop(true, 'screen-saver');
+        popupWindow.focus();
+      }
     }
   });
   
@@ -205,12 +267,16 @@ function showPopup() {
   if (settings.enableSound) {
     // When sound is enabled, let the popup handle timing based on sound duration
     // Send signal to popup to play sound and handle timing
-    popupWindow.webContents.once('did-finish-load', () => {
-      popupWindow.webContents.send('play-notification-sound', {
-        soundType: settings.soundType,
-        customSoundPath: settings.customSoundPath
+    if (popupWindow && !popupWindow.isDestroyed()) {
+      popupWindow.webContents.once('did-finish-load', () => {
+        if (popupWindow && !popupWindow.isDestroyed()) {
+          popupWindow.webContents.send('play-notification-sound', {
+            soundType: settings.soundType,
+            customSoundPath: settings.customSoundPath
+          });
+        }
       });
-    });
+    }
   } else {
     // Use configured auto-close timeout when sound is disabled
     setTimeout(() => {
@@ -340,8 +406,10 @@ function createTrayMenu() {
         if (mainWindow.isVisible()) {
           mainWindow.hide();
         } else {
-          mainWindow.show();
-          mainWindow.focus();
+          if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.show();
+            mainWindow.focus();
+          }
         }
       }
     },
@@ -384,8 +452,10 @@ function createTray() {
       if (mainWindow.isVisible()) {
         mainWindow.hide();
       } else {
-        mainWindow.show();
-        mainWindow.focus();
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.show();
+          mainWindow.focus();
+        }
       }
     });
   }
@@ -427,10 +497,12 @@ function createMenu() {
           label: 'Show/Hide Window',
           accelerator: 'CmdOrCtrl+Shift+M',
           click: () => {
-            if (mainWindow.isVisible()) {
-              mainWindow.hide();
-            } else {
-              mainWindow.show();
+            if (mainWindow && !mainWindow.isDestroyed()) {
+              if (mainWindow.isVisible()) {
+                mainWindow.hide();
+              } else {
+                mainWindow.show();
+              }
             }
           }
         }
@@ -513,15 +585,21 @@ function openSettings() {
 
   // Handle showing the window after it's loaded to prevent X11 issues
   settingsWindow.once('ready-to-show', () => {
-    settingsWindow.show();
-    if (process.platform === 'linux') {
-      // Additional X11 window management for settings
-      setTimeout(() => {
-        settingsWindow.focus();
-        settingsWindow.center();
-      }, 100);
-    } else {
-      settingsWindow.focus();
+    if (settingsWindow && !settingsWindow.isDestroyed()) {
+      settingsWindow.show();
+      if (process.platform === 'linux') {
+        // Additional X11 window management for settings
+        setTimeout(() => {
+          if (settingsWindow && !settingsWindow.isDestroyed()) {
+            settingsWindow.focus();
+            settingsWindow.center();
+          }
+        }, 100);
+      } else {
+        if (settingsWindow && !settingsWindow.isDestroyed()) {
+          settingsWindow.focus();
+        }
+      }
     }
   });
 
@@ -575,6 +653,15 @@ app.commandLine.appendSwitch('--disable-web-security');
 app.commandLine.appendSwitch('--ignore-certificate-errors');
 app.commandLine.appendSwitch('--allow-running-insecure-content');
 
+// Fix audio issues - MojoAudioOutputIPC errors
+app.commandLine.appendSwitch('--no-sandbox');
+app.commandLine.appendSwitch('--disable-features=VizDisplayCompositor');
+app.commandLine.appendSwitch('--autoplay-policy=no-user-gesture-required');
+app.commandLine.appendSwitch('--disable-web-audio');
+app.commandLine.appendSwitch('--disable-audio-input');
+app.commandLine.appendSwitch('--force-wave-audio');
+app.commandLine.appendSwitch('--try-supported-channel-layouts');
+
 // Fix X11 modal window management issues
 app.commandLine.appendSwitch('--enable-transparent-visuals');
 app.commandLine.appendSwitch('--disable-background-timer-throttling');
@@ -590,6 +677,11 @@ if (process.platform === 'linux') {
   
   // Handle X11 display issues
   process.env.DISPLAY = process.env.DISPLAY || ':0';
+  
+  // Audio system environment variables for Linux
+  process.env.PULSE_SERVER = process.env.PULSE_SERVER || 'unix:/run/user/' + process.getuid() + '/pulse/native';
+  process.env.ALSA_PCM_CARD = process.env.ALSA_PCM_CARD || '0';
+  process.env.ALSA_PCM_DEVICE = process.env.ALSA_PCM_DEVICE || '0';
 }
 
 // App event handlers
@@ -600,11 +692,13 @@ app.whenReady().then(() => {
   
   // Register global shortcut to show/hide the app
   globalShortcut.register('CommandOrControl+Shift+M', () => {
-    if (mainWindow.isVisible()) {
-      mainWindow.hide();
-    } else {
-      mainWindow.show();
-      mainWindow.focus();
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      if (mainWindow.isVisible()) {
+        mainWindow.hide();
+      } else {
+        mainWindow.show();
+        mainWindow.focus();
+      }
     }
   });
   
@@ -682,6 +776,14 @@ ipcMain.on('get-settings', (event) => {
   event.reply('settings-loaded', settings);
 });
 
+ipcMain.on('get-settings-info', (event) => {
+  event.reply('settings-info', {
+    settingsPath: getSettingsPath(),
+    audioPath: getAudioAssetsPath(),
+    userDataPath: app.getPath('userData')
+  });
+});
+
 ipcMain.on('save-settings', (event, newSettings) => {
   settings = { ...settings, ...newSettings };
   const success = saveSettings();
@@ -717,7 +819,7 @@ ipcMain.on('pause-monitoring', () => {
 
 // Store dialog state
 let isDialogOpen = false;
-
+ 
 // Handle custom sound file selection
 ipcMain.handle('select-sound-file', async (event) => {
   try {
@@ -754,7 +856,18 @@ ipcMain.handle('select-sound-file', async (event) => {
     
     // Handle the result
     if (!result.canceled && result.filePaths.length > 0) {
-      return result.filePaths[0];
+      const originalPath = result.filePaths[0];
+      
+      // Copy the selected file to app data directory
+      const copiedFilePath = copyCustomSoundFile(originalPath);
+      
+      if (copiedFilePath) {
+        console.log(`Custom sound file copied to: ${copiedFilePath}`);
+        return copiedFilePath;
+      } else {
+        console.error('Failed to copy custom sound file');
+        return null;
+      }
     }
     return null;
   } catch (error) {

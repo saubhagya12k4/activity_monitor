@@ -1,7 +1,7 @@
 {
   "name": "activity-monitor",
-  "version": "1.0.0",
-  "description": "An Electron app that shows a popup when mouse/keyboard is inactive for 10 seconds",
+  "version": "1.0.1",
+  "description": "Activity Monitor with enhanced UI, persistent settings, and robust audio system",
   "main": "main.js",
   "scripts": {
     "start": "npm run build-css:prod && npx electron .",

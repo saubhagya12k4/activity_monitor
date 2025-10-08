@@ -132,9 +132,39 @@
         
         function playSystemNotificationSound() {
             try {
-                // Use HTML5 Audio API to play system notification sound
-                // Create a simple notification beep
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                // Try to create AudioContext with better error handling
+                let audioContext = null;
+                
+                if (window.AudioContext) {
+                    audioContext = new window.AudioContext();
+                } else if (window.webkitAudioContext) {
+                    audioContext = new window.webkitAudioContext();
+                } else {
+                    throw new Error('Web Audio API not supported');
+                }
+                
+                // Handle suspended audio context (common on modern browsers)
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume().then(() => {
+                        createSystemBeep(audioContext);
+                    }).catch((resumeError) => {
+                        console.warn('Audio context resume failed:', resumeError);
+                        // Fallback to silent notification
+                        handleSilentNotification();
+                    });
+                } else {
+                    createSystemBeep(audioContext);
+                }
+                
+            } catch (error) {
+                console.error('Error creating system notification sound:', error);
+                // Fallback to silent notification
+                handleSilentNotification();
+            }
+        }
+        
+        function createSystemBeep(audioContext) {
+            try {
                 const soundDurationMs = 1500; // 1.5 seconds for system beep
                 
                 // Create a pleasant two-tone notification
@@ -149,10 +179,32 @@
                     ipcRenderer.send('sound-finished', soundDurationMs);
                 }, soundDurationMs);
                 
-            } catch (error) {
-                console.error('Error creating system notification sound:', error);
-                ipcRenderer.send('sound-error');
+            } catch (beepError) {
+                console.error('Error creating notification beep:', beepError);
+                handleSilentNotification();
             }
+        }
+        
+        function handleSilentNotification() {
+            // When audio fails, show visual notification and use timer-based closing
+            const soundDurationMs = 1500;
+            soundDuration = soundDurationMs;
+            showSoundBasedTimer(soundDurationMs);
+            
+            // Visual indication that sound failed
+            const timerElement = document.getElementById('popup-timer');
+            if (timerElement) {
+                timerElement.innerHTML = `
+                    <div class="flex items-center justify-center space-x-2">
+                        <div class="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
+                        <span>🔇 Silent notification (audio unavailable)</span>
+                    </div>
+                `;
+            }
+            
+            setTimeout(() => {
+                ipcRenderer.send('sound-finished', soundDurationMs);
+            }, soundDurationMs);
         }
         
         function playCustomSound(soundPath) {
