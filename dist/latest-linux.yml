@@ -1,8 +1,9 @@
 version: 1.0.0
 files:
-  - url: activity-monitor_1.0.0_amd64.deb
-    sha512: NrzT7p24EWoV9yrBvaWUUOw0MPZO1mPH7/r06Tihg9gpnEpnSiqGlPSqguYGf+NoHEjYK7QzxuKdjsT0tXJCYQ==
-    size: 81089828
-path: activity-monitor_1.0.0_amd64.deb
-sha512: NrzT7p24EWoV9yrBvaWUUOw0MPZO1mPH7/r06Tihg9gpnEpnSiqGlPSqguYGf+NoHEjYK7QzxuKdjsT0tXJCYQ==
-releaseDate: '2025-10-08T04:50:55.352Z'
+  - url: Activity-Monitor-1.0.0.AppImage
+    sha512: cEs1wFir6m7d34g2BauaLluEuiziKrcjxmcy2VGBZSgbj36WEuvuUPUy9F2m+AWG7uANFts9kj+MR0g1wnfHug==
+    size: 117528245
+    blockMapSize: 124617
+path: Activity-Monitor-1.0.0.AppImage
+sha512: cEs1wFir6m7d34g2BauaLluEuiziKrcjxmcy2VGBZSgbj36WEuvuUPUy9F2m+AWG7uANFts9kj+MR0g1wnfHug==
+releaseDate: '2025-10-08T05:36:36.909Z'
